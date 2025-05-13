@@ -10,7 +10,7 @@ def load_testbench_data(file):
     
     if file_name.endswith(".txt"):
         try:
-            return pd.read_csv(file, sep="\t")
+            return pd.read_csv(file, sep="\t").__dataframe__
         except Exception:
             return "Fail to load .txt file"
 
