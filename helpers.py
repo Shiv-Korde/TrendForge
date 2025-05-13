@@ -10,9 +10,9 @@ def load_testbench_data(file):
     
     if file_name.endswith(".txt"):
         try:
-            return pd.read_csv(file, sep="\t").__dataframe__
+            return pd.read_csv(file, sep="\t")
         except Exception:
-            return "Fail to load .txt file"
+            return None
 
     elif file_name.endswith(".dat") or file_name.endswith(".mf4"):
         try:
