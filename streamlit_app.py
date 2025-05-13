@@ -13,7 +13,7 @@ if uploaded_file:
         df = load_testbench_data(uploaded_file)
         if df is not None:
             st.success("Data loaded successfully!")
-            st.dataframe(df.head(100))
+            st.dataframe(df.head(10))
 
             st.markdown("### 📌 Anomaly Detection")
             anomalies = detect_anomalies(df)
