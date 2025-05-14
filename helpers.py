@@ -9,11 +9,11 @@ def load_testbench_data(file):
     file_name = file.name.lower()
     
     if file_name.endswith(".txt"):
-        try:
-            txt_file = pd.read_csv(file, sep="\t")
-            return txt_file
-        except Exception:
-            return None
+        # try:
+        txt_file = pd.read_csv(file, sep="\t")
+        return txt_file
+        # except Exception:
+        #     return None
 
     elif file_name.endswith(".dat") or file_name.endswith(".mf4"):
         try:
