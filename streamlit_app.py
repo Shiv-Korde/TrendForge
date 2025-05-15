@@ -27,25 +27,26 @@ if uploaded_file:
             st.markdown("---")
             st.markdown("## 🧹 Data Cleaning & Preprocessing")
 
-            # Columns for layout
             left, right = st.columns([1, 2])
 
             with left:
                 st.subheader("🔍 Missing Value Summary")
                 null_summary = df.isnull().sum()
                 missing_cols = null_summary[null_summary > 0]
-
                 if not missing_cols.empty:
                     st.dataframe(missing_cols.rename("Missing Count"), use_container_width=True)
 
-                    st.markdown("### 🛠️ Choose a Cleaning Method")
-                    clean_option = st.selectbox("Missing Data Strategy", [
-                        "None", "Drop Rows with Nulls", "Fill with 0", "Forward Fill", "Backward Fill"
+                    st.markdown("### 🛠️ Global Cleaning Options")
+                    clean_option = st.selectbox("Choose method for handling missing data globally", [
+                        "None", "Drop Rows with Nulls", "Drop Columns with Nulls", "Fill with 0", "Forward Fill", "Backward Fill"
                     ])
-                    if st.button("✅ Apply Cleaning"):
+                    if st.button("✅ Apply Global Cleaning"):
                         if clean_option == "Drop Rows with Nulls":
                             df.dropna(inplace=True)
                             st.success("Dropped rows with missing values.")
+                        elif clean_option == "Drop Columns with Nulls":
+                            df.dropna(axis=1, inplace=True)
+                            st.success("Dropped columns with missing values.")
                         elif clean_option == "Fill with 0":
                             df.fillna(0, inplace=True)
                             st.success("Filled missing values with 0.")
@@ -57,19 +58,19 @@ if uploaded_file:
                             st.success("Backward filled missing values.")
                         else:
                             st.info("No changes made.")
+
                 else:
                     st.success("✅ No missing values found.")
-
                 
+
             with right:
-                st.subheader("👁️ Data Preview Options")
+                st.subheader("👁️ Data Preview")
                 show_preview = st.checkbox("Show Data Preview", value=True)
 
                 if show_preview:
                     preview_rows = st.slider("Rows to Preview", 5, 100, 10)
                     st.dataframe(df.head(preview_rows), use_container_width=True)
 
-                # Export
                 st.subheader("💾 Export Cleaned Data")
                 csv = df.to_csv(index=False).encode("utf-8")
                 st.download_button(
@@ -78,25 +79,46 @@ if uploaded_file:
                     file_name="cleaned_testbench_data.csv",
                     mime="text/csv"
                 )
-
                 
-            # ➕ Optional Transformation
-            st.markdown("---")
-            with st.expander("⚙️ Optional Transformations (Normalize / Standardize)"):
-                st.markdown("Apply transformations to numeric columns for better scaling.")
-                numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-                transformation = st.radio("Choose transformation:", ["None", "Normalize (0-1)", "Standardize (Z-Score)"])
-                if st.button("📐 Apply Transformation"):
-                    if transformation != "None":
-                        for col in numeric_cols:
-                            if transformation == "Normalize (0-1)":
-                                min_val = df[col].min()
-                                max_val = df[col].max()
-                                df[col] = (df[col] - min_val) / (max_val - min_val)
-                            elif transformation == "Standardize (Z-Score)":
-                                df[col] = (df[col] - df[col].mean()) / df[col].std()
-                        st.success(f"{transformation} applied.")
 
+            # 🧠 Smart Auto-Clean Button
+            st.markdown("### 🤖 Auto Clean (AI-based Heuristics)")
+            if st.button("✨ Auto Clean Data"):
+                for col in df.columns:
+                    null_pct = df[col].isnull().mean()
+                    if null_pct == 0:
+                        continue
+                    elif null_pct > 0.5:
+                        df.drop(columns=[col], inplace=True)
+                    elif null_pct <= 0.1:
+                        df[col] = df[col].fillna(0)
+                    elif null_pct <= 0.3:
+                        df[col] = df[col].fillna(df[col].mean())
+                    else:
+                        df[col] = df[col].ffill().bfill()
+                st.success("Smart cleaning applied based on missing value patterns!")
+
+            # ⚙️ Per-column cleaning
+            st.markdown("---")
+            with st.expander("🧬 Clean Specific Signals/Columns"):
+                clean_cols = df.columns[df.isnull().any()].tolist()
+                if clean_cols:
+                    selected_col = st.selectbox("Select a column to clean", clean_cols)
+                    col_method = st.radio("Choose cleaning method", ["Fill with 0", "Forward Fill", "Backward Fill", "Fill with Mean", "Drop Column"])
+                    if st.button("🧼 Clean Selected Column"):
+                        if col_method == "Fill with 0":
+                            df[selected_col] = df[selected_col].fillna(0)
+                        elif col_method == "Forward Fill":
+                            df[selected_col] = df[selected_col].ffill()
+                        elif col_method == "Backward Fill":
+                            df[selected_col] = df[selected_col].bfill()
+                        elif col_method == "Fill with Mean":
+                            df[selected_col] = df[selected_col].fillna(df[selected_col].mean())
+                        elif col_method == "Drop Column":
+                            df.drop(columns=[selected_col], inplace=True)
+                        st.success(f"{selected_col} cleaned using '{col_method}'.")
+                else:
+                    st.info("No columns with missing data.")
 
 
             # Anomaly Detection
