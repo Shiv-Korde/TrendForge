@@ -31,24 +31,6 @@ if uploaded_file:
             left, right = st.columns([1, 2])
 
             with left:
-                st.subheader("👁️ Data Preview Options")
-                show_preview = st.checkbox("Show Data Preview", value=True)
-
-                if show_preview:
-                    preview_rows = st.slider("Rows to Preview", 5, 100, 10)
-                    st.dataframe(df.head(preview_rows), use_container_width=True)
-
-                # Export
-                st.subheader("💾 Export Cleaned Data")
-                csv = df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="⬇️ Download as CSV",
-                    data=csv,
-                    file_name="cleaned_testbench_data.csv",
-                    mime="text/csv"
-                )
-
-            with right:
                 st.subheader("🔍 Missing Value Summary")
                 null_summary = df.isnull().sum()
                 missing_cols = null_summary[null_summary > 0]
@@ -78,6 +60,26 @@ if uploaded_file:
                 else:
                     st.success("✅ No missing values found.")
 
+                
+            with right:
+                st.subheader("👁️ Data Preview Options")
+                show_preview = st.checkbox("Show Data Preview", value=True)
+
+                if show_preview:
+                    preview_rows = st.slider("Rows to Preview", 5, 100, 10)
+                    st.dataframe(df.head(preview_rows), use_container_width=True)
+
+                # Export
+                st.subheader("💾 Export Cleaned Data")
+                csv = df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="⬇️ Download as CSV",
+                    data=csv,
+                    file_name="cleaned_testbench_data.csv",
+                    mime="text/csv"
+                )
+
+                
             # ➕ Optional Transformation
             st.markdown("---")
             with st.expander("⚙️ Optional Transformations (Normalize / Standardize)"):
