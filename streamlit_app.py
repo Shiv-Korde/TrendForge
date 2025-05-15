@@ -10,11 +10,20 @@ uploaded_file = st.file_uploader("Choose a test bench data file", type=["txt", "
 
 if uploaded_file:
     with st.spinner("Loading and analyzing data..."):
-        df = load_testbench_data(uploaded_file)
+        metadata, df = load_testbench_data(uploaded_file)
         if df is not None:
             st.success("Data loaded successfully!")
+
+            # Show Metadata
+            if metadata:
+                st.markdown("### 🧾 File Metadata")
+                st.code(metadata, language="text")
+
+            # Show Data Table
+            st.markdown("### 🗂️ Measurement Data Preview")
             st.dataframe(df.head(100))
 
+            # Anomaly Detection
             st.markdown("### 📌 Anomaly Detection")
             anomalies = detect_anomalies(df)
             st.write(anomalies)

@@ -10,10 +10,33 @@ def load_testbench_data(file):
     
     if file_name.endswith(".txt"):
         try:
-            return pd.read_csv(file, sep=None, engine='python', encoding='utf-8', error_bad_lines=False)
-        except Exception:
-            return None
+            # Read all lines
+            content = file.read().decode("utf-8").splitlines()
 
+            # Extract metadata (all lines before the 'Timestamp' header)
+            header_line_index = next(i for i, line in enumerate(content) if line.strip().startswith("Timestamp"))
+            metadata_lines = content[:header_line_index]
+            metadata = "\n".join(metadata_lines)
+
+            # Parse data section
+            header = content[header_line_index].strip().split("\t")
+            data = [
+                line.strip().split("\t")
+                for line in content[header_line_index + 1:]
+                if len(line.strip().split("\t")) == len(header)
+            ]
+
+            df = pd.DataFrame(data, columns=header)
+            df["timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
+            df.drop(columns=["Timestamp"], inplace=True)
+            for col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+
+            return metadata, df.dropna(subset=["timestamp"])
+        except Exception as e:
+            print("Error loading TXT:", e)
+            return None, None
+        
     elif file_name.endswith(".dat") or file_name.endswith(".mf4"):
         try:
             mdf = asammdf.MDF(BytesIO(file.read()))
