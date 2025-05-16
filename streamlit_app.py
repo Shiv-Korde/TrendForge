@@ -1,99 +1,64 @@
 import streamlit as st
 from data_loader import load_testbench_data
-from data_cleaning import clean_data
-from anomaly_detection import detect_anomalies
 from ui_data_cleaning import render_data_cleaning_ui
+from anomaly_detection import detect_anomalies
 
+# Set page configuration
 st.set_page_config(page_title="TrendForge – Analyzer", layout="wide")
-st.title("📊 TrendForge – AI-Powered Test Bench Analyzer")
 
-# Navigation Bar
-section = st.radio(
-    "🔍 Navigate",
-    ["Data Loading", "Data Cleaning", "Visualization", "Insight"],
-    horizontal=True
-)
+# Sidebar Navigation
+with st.sidebar:
+    st.title("🧭 TrendForge Navigation")
+    section = st.radio("Go to section:", ["Data Loading", "Data Cleaning", "Visualization", "Insight"])
 
+# Section: Data Loading
 if section == "Data Loading":
+    st.title("📂 Data Loading")
     uploaded_file = st.file_uploader("Upload test bench file", type=["txt", "mf4", "dat", "tdms", "lvm"])
 
-    if uploaded_file is not None:
+    if uploaded_file:
         metadata, df = load_testbench_data(uploaded_file)
         if df is not None and not df.empty:
-            st.session_state["metadata"] = metadata
             st.session_state["df"] = df
+            st.session_state["metadata"] = metadata
             st.session_state["file_name"] = uploaded_file.name
-            st.success(f"✅ File '{uploaded_file.name}' loaded successfully.")
+            st.success(f"✅ File '{uploaded_file.name}' loaded.")
         else:
-            st.error("❌ Could not load measurement data.")
-    elif "df" in st.session_state:
-        st.info(f"Showing previously loaded file: {st.session_state.get('file_name', 'unknown')}")
-    else:
-        st.warning("No file uploaded yet.")
+            st.error("❌ Could not load valid measurement data.")
 
-    # Show metadata and data if available
     if "df" in st.session_state:
-        if "metadata" in st.session_state:
-            st.markdown("### 🧾 Metadata")
-            st.code(st.session_state["metadata"], language="text")
+        st.markdown("### 🧾 Metadata")
+        st.code(st.session_state.get("metadata", "No metadata found."), language="text")
 
-        st.markdown("### 🗂️ Measurement Data Preview")
+        st.markdown("### 🗂️ Data Preview")
         st.dataframe(st.session_state["df"].head(10))
 
+# Section: Data Cleaning
 elif section == "Data Cleaning":
-    render_data_cleaning_ui()
-    
+    st.title("🧹 Data Cleaning")
+    render_data_cleaning_ui()  # Sidebar options are handled inside this module
+
+# Section: Visualization
 elif section == "Visualization":
+    st.title("📈 Data Visualization")
     if "df" in st.session_state:
         df = st.session_state["df"]
         numeric_cols = df.select_dtypes(include='number').columns
-        if len(numeric_cols) > 0:
-            selected = st.selectbox("Select column to plot", numeric_cols)
-            st.line_chart(df[selected])
+        if not numeric_cols.empty:
+            col = st.selectbox("Select column to plot", numeric_cols)
+            st.line_chart(df[col])
         else:
             st.warning("No numeric columns found.")
     else:
-        st.warning("Please upload and load data first.")
+        st.warning("Load data first in 'Data Loading' section.")
 
+# Section: Insight
 elif section == "Insight":
+    st.title("🔍 Data Insights")
     if "df" in st.session_state:
         df = st.session_state["df"]
-        st.markdown("### 🚨 Anomaly Detection")
+        st.subheader("🚨 Anomaly Detection")
         anomalies = detect_anomalies(df)
         st.write(anomalies)
     else:
-        st.warning("Please upload and load data first.")
-
-
-# uploaded_file = st.file_uploader("Upload test bench file", type=["txt", "mf4", "dat", "tdms", "lvm"])
-
-# if uploaded_file:
-#     metadata, df = load_testbench_data(uploaded_file)
-
-#     if df is not None and not df.empty:
-#         st.success("✅ Measurement data loaded successfully!")
-
-#         # Show metadata
-#         if metadata:
-#             st.markdown("### 🧾 Metadata")
-#             st.code(metadata, language="text")
-
-#         st.markdown("### 🗂️ Measurement Data Preview")
-#         st.dataframe(df.head(10))
-
-#         # Data Cleaning
-#         if df.isnull().sum().sum() > 0:
-#             st.markdown("### 🧹 Data Cleaning")
-#             method = st.radio("Missing values found. Choose a cleaning method:", ["Drop Rows", "Fill with 0", "Forward Fill", "Backward Fill"])
-#             df = clean_data(df, method)
-#             st.success("✅ Cleaned missing values.")
-#             st.dataframe(df.head(10))
-#         else:
-#             st.info("No missing values detected.")
-
-#         # Anomaly Detection
-#         st.markdown("### 🚨 Anomaly Detection")
-#         anomalies = detect_anomalies(df)
-#         st.write(anomalies)
-#     else:
-#         st.error("❌ Could not load measurement data.")
+        st.warning("Load data first in 'Data Loading' section.")

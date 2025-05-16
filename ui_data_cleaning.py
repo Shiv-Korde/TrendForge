@@ -9,17 +9,12 @@ def render_data_cleaning_ui():
         return
 
     df = st.session_state["df"]
-    st.markdown("### 🧹 Data Cleaning")
 
-    # Set column ratio 1:2 (tools:left, summary:right)
-    col1, col2 = st.columns([1, 2])
-
-    # 📋 Left: Cleaning Controls
-    with col1:
-        mode = st.radio("Select cleaning mode:", ["Manual", "Automatic"])
+    with st.sidebar:
+        st.subheader("⚙️ Cleaning Controls")
+        mode = st.radio("Cleaning Mode", ["Manual", "Automatic"])
 
         if mode == "Manual":
-            st.subheader("🔧 Manual Column Cleaning")
             column = st.selectbox("Select column", df.columns)
             method = st.selectbox("Cleaning method", ["Fill with 0", "Forward Fill", "Backward Fill", "Drop Column"])
             if st.button("Apply to Selected Column"):
@@ -30,42 +25,34 @@ def render_data_cleaning_ui():
                 st.session_state["df"] = df
                 st.success(f"✅ Applied '{method}' to '{column}'")
 
+            st.markdown("---")
             st.subheader("🧹 Global Cleaning")
-            global_method = st.selectbox("Apply to entire dataset", ["Drop Rows", "Fill with 0", "Forward Fill", "Backward Fill"])
+            global_method = st.selectbox("Global method", ["Drop Rows", "Fill with 0", "Forward Fill", "Backward Fill"])
             if st.button("Apply Global Cleaning"):
                 df = clean_data(df, global_method)
                 st.session_state["df"] = df
-                st.success(f"✅ Applied global cleaning: {global_method}")
+                st.success(f"✅ Global cleaning: {global_method}")
 
         elif mode == "Automatic":
-            st.subheader("✨ AI-Based Auto Cleaning")
-            if st.button("Run Auto Clean"):
+            if st.button("✨ Run AI Clean"):
                 df = auto_clean(df)
                 st.session_state["df"] = df
-                st.success("✅ AI-based automatic cleaning completed!")
+                st.success("✅ AI cleaning completed!")
 
-    # 📊 Right: Missing Value Summary
-    with col2:
-        st.subheader("📊 Missing Values Summary")
-        null_summary = df.isnull().sum()
-        null_summary = null_summary[null_summary > 0]
-        if not null_summary.empty:
-            st.dataframe(null_summary.to_frame("Missing Count"))
-        else:
-            st.info("✅ No missing values in the dataset.")
+    # Main section: Summary + Preview + Export
+    st.subheader("📊 Missing Values Summary")
+    null_summary = df.isnull().sum()
+    null_summary = null_summary[null_summary > 0]
+    if not null_summary.empty:
+        st.dataframe(null_summary.to_frame("Missing Count"))
+    else:
+        st.info("✅ No missing values in the dataset.")
 
-    # 🔍 Cleaned Data Preview
-    st.markdown("### 🔍 Cleaned Data Preview")
+    st.subheader("🔍 Cleaned Data Preview")
     st.dataframe(df.head(10))
 
-    # ⬇️ Export to Excel
-    st.markdown("### ⬇️ Export Cleaned Data")
+    st.subheader("⬇️ Export Cleaned Data")
     towrite = BytesIO()
     df.to_excel(towrite, index=False, engine='openpyxl')
     towrite.seek(0)
-    st.download_button(
-        label="📥 Download as Excel",
-        data=towrite,
-        file_name="cleaned_testbench_data.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    st.download_button("📥 Download Excel", towrite, "cleaned_testbench_data.xlsx")
