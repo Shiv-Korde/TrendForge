@@ -8,8 +8,6 @@ def clean_data(df: pd.DataFrame, method: str, column: str = None) -> pd.DataFram
             df[column] = df[column].ffill()
         elif method == "Backward Fill":
             df[column] = df[column].bfill()
-        elif method == "Drop Nulls":
-            df = df.dropna(subset=[column])
         return df
 
     if method == "Drop Rows":
@@ -20,8 +18,8 @@ def clean_data(df: pd.DataFrame, method: str, column: str = None) -> pd.DataFram
         return df.ffill()
     elif method == "Backward Fill":
         return df.bfill()
-    else:
-        return df
+    return df
+
 
 def auto_clean(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:

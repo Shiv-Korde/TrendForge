@@ -11,7 +11,8 @@ def render_data_cleaning_ui():
     df = st.session_state["df"]
     st.markdown("### 🧹 Data Cleaning")
 
-    col1, col2 = st.columns(2)
+    # Set column ratio 1:2 (tools:left, summary:right)
+    col1, col2 = st.columns([1, 2])
 
     # 📋 Left: Cleaning Controls
     with col1:
@@ -20,9 +21,12 @@ def render_data_cleaning_ui():
         if mode == "Manual":
             st.subheader("🔧 Manual Column Cleaning")
             column = st.selectbox("Select column", df.columns)
-            method = st.selectbox("Cleaning method", ["Fill with 0", "Forward Fill", "Backward Fill", "Drop Nulls"])
+            method = st.selectbox("Cleaning method", ["Fill with 0", "Forward Fill", "Backward Fill", "Drop Column"])
             if st.button("Apply to Selected Column"):
-                df = clean_data(df, method, column)
+                if method == "Drop Column":
+                    df = df.drop(columns=[column])
+                else:
+                    df = clean_data(df, method, column)
                 st.session_state["df"] = df
                 st.success(f"✅ Applied '{method}' to '{column}'")
 
@@ -40,7 +44,7 @@ def render_data_cleaning_ui():
                 st.session_state["df"] = df
                 st.success("✅ AI-based automatic cleaning completed!")
 
-    # 📊 Right: Null Summary
+    # 📊 Right: Missing Value Summary
     with col2:
         st.subheader("📊 Missing Values Summary")
         null_summary = df.isnull().sum()
