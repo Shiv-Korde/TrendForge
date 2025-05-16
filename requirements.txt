@@ -4,3 +4,5 @@ numpy
 asammdf
 nptdms
 openpyxl
+polars
+plotly

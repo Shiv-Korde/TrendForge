@@ -1,6 +1,7 @@
 import streamlit as st
 from data_loader import load_testbench_data
 from ui_data_cleaning import render_data_cleaning_ui
+from ui_visualization import render_visualization_ui
 from anomaly_detection import detect_anomalies
 
 # Set page configuration
@@ -41,16 +42,7 @@ elif section == "Data Cleaning":
 # Section: Visualization
 elif section == "Visualization":
     st.title("📈 Data Visualization")
-    if "df" in st.session_state:
-        df = st.session_state["df"]
-        numeric_cols = df.select_dtypes(include='number').columns
-        if not numeric_cols.empty:
-            col = st.selectbox("Select column to plot", numeric_cols)
-            st.line_chart(df[col])
-        else:
-            st.warning("No numeric columns found.")
-    else:
-        st.warning("Load data first in 'Data Loading' section.")
+    render_visualization_ui()
 
 # Section: Insight
 elif section == "Insight":
