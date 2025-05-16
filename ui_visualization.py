@@ -18,7 +18,14 @@ def render_visualization_ui():
     # Convert pandas df to Polars for performance
     pdf = st.session_state["df"]
     df = pl.from_pandas(pdf)
-    numeric_cols = [col for col, dtype in df.schema.items() if pl.datatypes.is_numeric(dtype)]
+    df = pl.from_pandas(st.session_state["df"])
+
+    # Efficient numeric column detection
+    numeric_cols = [
+        col for col, dtype in df.schema.items()
+        if pl.datatypes.is_float(dtype) or pl.datatypes.is_integer(dtype)
+    ]
+
 
     if not numeric_cols:
         st.info("No numeric columns to visualize.")
