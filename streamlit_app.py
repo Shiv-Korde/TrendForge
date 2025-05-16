@@ -15,16 +15,29 @@ section = st.radio(
 
 if section == "Data Loading":
     uploaded_file = st.file_uploader("Upload test bench file", type=["txt", "mf4", "dat", "tdms", "lvm"])
-    if uploaded_file:
+
+    if uploaded_file is not None:
         metadata, df = load_testbench_data(uploaded_file)
         if df is not None and not df.empty:
             st.session_state["metadata"] = metadata
             st.session_state["df"] = df
-            st.success("✅ File loaded.")
-            st.code(metadata, language="text")
-            st.dataframe(df.head(10))
+            st.session_state["file_name"] = uploaded_file.name
+            st.success(f"✅ File '{uploaded_file.name}' loaded successfully.")
         else:
             st.error("❌ Could not load measurement data.")
+    elif "df" in st.session_state:
+        st.info(f"Showing previously loaded file: {st.session_state.get('file_name', 'unknown')}")
+    else:
+        st.warning("No file uploaded yet.")
+
+    # Show metadata and data if available
+    if "df" in st.session_state:
+        if "metadata" in st.session_state:
+            st.markdown("### 🧾 Metadata")
+            st.code(st.session_state["metadata"], language="text")
+
+        st.markdown("### 🗂️ Measurement Data Preview")
+        st.dataframe(st.session_state["df"].head(10))
 
 elif section == "Data Cleaning":
     if "df" in st.session_state:
