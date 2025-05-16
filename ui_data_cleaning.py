@@ -51,8 +51,8 @@ def render_data_cleaning_ui():
     st.subheader("🔍 Cleaned Data Preview")
     st.dataframe(df.head(10))
 
-    st.subheader("⬇️ Export Cleaned Data")
-    towrite = BytesIO()
-    df.to_excel(towrite, index=False, engine='openpyxl')
-    towrite.seek(0)
-    st.download_button("📥 Download Excel", towrite, "cleaned_testbench_data.xlsx")
+    # st.subheader("⬇️ Export Cleaned Data")
+    # towrite = BytesIO()
+    # df.to_excel(towrite, index=False, engine='openpyxl')
+    # towrite.seek(0)
+    # st.download_button("📥 Download Excel", towrite, "cleaned_testbench_data.xlsx")
