@@ -57,4 +57,4 @@ def render_visualization_ui():
         st.error("Invalid chart type.")
         return
 
-    st.plotly_chart(fig, use_container_width=True)
+    # st.plotly_chart(fig, use_container_width=True)
