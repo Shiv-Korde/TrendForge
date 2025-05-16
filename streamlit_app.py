@@ -42,15 +42,33 @@ if section == "Data Loading":
 elif section == "Data Cleaning":
     if "df" in st.session_state:
         df = st.session_state["df"]
-        if df.isnull().sum().sum() > 0:
-            st.warning(f"Missing values: {df.isnull().sum().sum()}")
-            method = st.radio("Choose cleaning method", ["Drop Rows", "Fill with 0", "Forward Fill", "Backward Fill"])
-            df = clean_data(df, method)
-            st.session_state["df"] = df
-            st.success("✅ Cleaned missing values.")
-            st.dataframe(df.head(10))
-        else:
-            st.info("No missing values.")
+        st.markdown("### 🧹 Data Cleaning")
+        mode = st.radio("Select cleaning mode:", ["Manual", "Automatic"])
+
+        if mode == "Manual":
+            with st.expander("🔧 Column-wise Cleaning"):
+                column = st.selectbox("Select column", df.columns)
+                method = st.selectbox("Cleaning method", ["Fill with 0", "Forward Fill", "Backward Fill", "Drop Nulls"])
+                if st.button("Apply to Selected Column"):
+                    df = clean_data(df, method, column)
+                    st.session_state["df"] = df
+                    st.success(f"Applied '{method}' to '{column}'")
+
+            with st.expander("🧹 Global Cleaning Options"):
+                global_method = st.selectbox("Apply to entire dataset", ["Drop Rows", "Fill with 0", "Forward Fill", "Backward Fill"])
+                if st.button("Apply Global Cleaning"):
+                    df = clean_data(df, global_method)
+                    st.session_state["df"] = df
+                    st.success(f"Applied global cleaning: {global_method}")
+
+        elif mode == "Automatic":
+            if st.button("✨ Run AI-Based Auto Cleaning"):
+                df = auto_clean(df)
+                st.session_state["df"] = df
+                st.success("AI-based automatic cleaning completed!")
+
+        st.markdown("### 🔍 Cleaned Data Preview")
+        st.dataframe(df.head(10))
     else:
         st.warning("Please upload and load data first in 'Data Loading' tab.")
 
